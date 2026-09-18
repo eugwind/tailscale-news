@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{.Theme}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}}</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbfbfd;
+  --panel: #ffffff;
+  --text: #16181d;
+  --muted: #61656e;
+  --line: #e3e5ea;
+  --accent: #3b5bdb;
+  --security: #c92a2a;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #14161a;
+  --panel: #1c1f24;
+  --text: #e8eaed;
+  --muted: #9aa0aa;
+  --line: #2b2f36;
+  --accent: #8aa4ff;
+  --security: #ff8787;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-theme="auto"] {
+    color-scheme: dark;
+    --bg: #14161a;
+    --panel: #1c1f24;
+    --text: #e8eaed;
+    --muted: #9aa0aa;
+    --line: #2b2f36;
+    --accent: #8aa4ff;
+    --security: #ff8787;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 2rem 1rem 4rem;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap { max-width: 52rem; margin: 0 auto; }
+header { border-bottom: 1px solid var(--line); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+h1 { margin: 0 0 .25rem; font-size: 1.5rem; letter-spacing: -.01em; }
+h1 a { color: inherit; text-decoration: none; }
+.sub { color: var(--muted); font-size: .875rem; margin: 0; }
+nav { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1rem 0 0; }
+nav a {
+  display: inline-block;
+  padding: .3rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: .8125rem;
+}
+nav a:hover { border-color: var(--accent); color: var(--accent); }
+nav a.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.bar { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; justify-content: space-between; }
+.themes { display: flex; gap: .25rem; align-items: center; }
+.themes span { color: var(--muted); font-size: .75rem; margin-right: .2rem; }
+.themes a {
+  padding: .2rem .55rem;
+  border: 1px solid var(--line);
+  border-radius: .3rem;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: .75rem;
+}
+.themes a:hover { border-color: var(--accent); color: var(--accent); }
+.themes a.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: .5rem;
+  padding: .9rem 1.1rem;
+  margin-bottom: .6rem;
+}
+article.security { border-left: 3px solid var(--security); }
+article h2 { margin: 0 0 .35rem; font-size: 1.0625rem; font-weight: 600; line-height: 1.35; }
+article h2 a { color: var(--text); text-decoration: none; }
+article h2 a:hover { color: var(--accent); text-decoration: underline; }
+.meta { color: var(--muted); font-size: .8125rem; display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; }
+.tag { text-transform: uppercase; letter-spacing: .04em; font-size: .6875rem; font-weight: 600; }
+.tag.security { color: var(--security); }
+.summary { margin: .5rem 0 0; color: var(--muted); font-size: .9375rem; }
+.also { margin: .4rem 0 0; font-size: .75rem; color: var(--muted); }
+.empty { color: var(--muted); text-align: center; padding: 3rem 1rem; }
+footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .8125rem; }
+footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1><a href="/">Tailscale News</a></h1>
+  <p class="sub">{{.Total}} stories from {{.SourceCount}} sources &middot; showing {{.Count}}</p>
+  <div class="bar">
+    <nav>
+      {{range .Categories}}
+      <a href="{{.Href}}"{{if .Active}} class="active"{{end}}>{{.Label}}</a>
+      {{end}}
+    </nav>
+    <div class="themes">
+      <span>Theme</span>
+      {{range .Themes}}
+      <a href="{{.Href}}"{{if .Active}} class="active"{{end}}>{{.Label}}</a>
+      {{end}}
+    </div>
+  </div>
+</header>
+
+<main>
+{{if .Items}}
+  {{range .Items}}
+  <article{{if eq (printf "%s" .Category) "security"}} class="security"{{end}}>
+    <h2><a href="{{.URL}}" rel="noopener noreferrer external" target="_blank">{{.Title}}</a></h2>
+    <p class="meta">
+      <span class="tag{{if eq (printf "%s" .Category) "security"}} security{{end}}">{{.Category}}</span>
+      <span>{{.Source}}</span>
+      {{if .HasDate}}<span><time datetime="{{isoDate .Published}}">{{shortDate .Published}}</time> &middot; {{age .Published}}</span>
+      {{else}}<span>first seen {{age .FirstSeen}}</span>{{end}}
+      <span>{{host .URL}}</span>
+    </p>
+    {{with truncate .Summary 240}}<p class="summary">{{.}}</p>{{end}}
+    {{if gt (len .Sources) 1}}<p class="also">Also carried by: {{join .Sources}}</p>{{end}}
+  </article>
+  {{end}}
+{{else if .Total}}
+  <p class="empty">No stories match this filter. <a href="/">Show all {{.Total}}</a>.</p>
+{{else}}
+  <p class="empty">No stories yet. The scheduler polls on startup &mdash; refresh in a moment.</p>
+{{end}}
+</main>
+
+<footer>
+  <p>
+    JSON: <a href="/api/items">/api/items</a> &middot;
+    <a href="/sources">/sources</a> &middot;
+    <a href="/healthz">/healthz</a>
+  </p>
+  <p>tailscale-news {{.Version}}</p>
+</footer>
+
+</div>
+</body>
+</html>

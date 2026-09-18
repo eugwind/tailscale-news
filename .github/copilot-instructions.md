@@ -9,7 +9,7 @@ news from RSS/Atom feeds, blogs, release notes, and community sources.
 
 ## Language & Runtime
 
-- Primary language: **Go 1.26** (`go 1.26` in `go.mod`)
+- Primary language: **Go 1.26** (`go.mod` pins the current patch, e.g. `go 1.26.8` — keep it on the latest patch)
 - Target platform: **linux/amd64**, developed under **WSL2** on Windows
 - Build with the standard toolchain: `go build ./...`, `go test ./...`
 - Keep all paths POSIX-style; never emit Windows paths or `\` separators

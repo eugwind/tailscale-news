@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Example Blog</title>
+    <link>https://example.test/blog</link>
+    <description>Synthetic fixture standing in for a vendor blog feed.</description>
+    <item>
+      <title>Subnet routers now support automatic failover</title>
+      <link>https://example.test/blog/subnet-router-failover?utm_source=rss&amp;utm_medium=feed</link>
+      <guid isPermaLink="false">blog-2026-0912-failover</guid>
+      <description>&lt;p&gt;Two routers advertising the &lt;em&gt;same&lt;/em&gt; route now fail over automatically.&lt;/p&gt;</description>
+      <pubDate>Sat, 12 Sep 2026 14:30:00 +0000</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[ACLs: a shorter grammar]]></title>
+      <link>/blog/acl-grammar/</link>
+      <guid isPermaLink="false">blog-2026-0903-acl</guid>
+      <content:encoded>&lt;p&gt;The policy file gains a compact form.&lt;/p&gt;</content:encoded>
+      <pubDate>Thu, 03 Sep 2026 09:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Undated field note</title>
+      <link>HTTPS://EXAMPLE.TEST:443/blog/field-note#section-2</link>
+      <description>No publication date is supplied by this entry.</description>
+    </item>
+    <item>
+      <title>Entry with no link at all</title>
+      <description>This entry must be skipped, not fail the feed.</description>
+    </item>
+  </channel>
+</rss>

@@ -14,8 +14,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/eugwind/tailscale-news/internal/aggregate"
 	"github.com/eugwind/tailscale-news/internal/config"
+	"github.com/eugwind/tailscale-news/internal/feed"
 	"github.com/eugwind/tailscale-news/internal/httpapi"
+	"github.com/eugwind/tailscale-news/internal/store"
 )
 
 // Injected at link time by .github/skills/release-build/scripts/build-release.sh.
@@ -59,10 +62,43 @@ func run(ctx context.Context, args []string, getenv func(string) string, stdout,
 		slog.String("addr", cfg.Addr),
 		slog.Duration("poll_interval", cfg.PollInterval),
 		slog.Int("max_concurrency", cfg.MaxConcurrency),
+		slog.Int("max_items", cfg.MaxItems),
 	)
 
-	handler := httpapi.NewHandler(logger, httpapi.BuildInfo{Version: version, Commit: commit})
-	srv := httpapi.NewServer(cfg.Addr, handler)
+	sources := feed.Sources()
+	fetcher := feed.NewFetcher(
+		feed.NewHTTPClient(cfg.FetchTimeout),
+		logger,
+		feed.FetcherOptions{
+			UserAgent:      "tailscale-news/" + version,
+			MaxConcurrency: cfg.MaxConcurrency,
+		},
+	)
+
+	items := store.NewMemory(cfg.MaxItems)
+	sink := func(ctx context.Context, result feed.Result) {
+		stats := items.Put(result.Items)
+		logger.InfoContext(ctx, "items stored",
+			slog.String("source", result.Source.Name),
+			slog.Int("added", stats.Added),
+			slog.Int("updated", stats.Updated),
+			slog.Int("duplicates", stats.Duplicates),
+			slog.Int("evicted", stats.Evicted),
+			slog.Int("total", items.Len()),
+		)
+	}
+	scheduler := aggregate.NewScheduler(fetcher, sources, cfg.PollInterval, logger, sink)
+
+	build := httpapi.BuildInfo{Version: version, Commit: commit}
+	srv := httpapi.NewServer(cfg.Addr, httpapi.NewHandler(logger, build, fetcher, sources, items))
+
+	schedulerDone := make(chan struct{})
+	go func() {
+		defer close(schedulerDone)
+		if err := scheduler.Run(ctx); err != nil {
+			logger.ErrorContext(ctx, "scheduler stopped early", slog.Any("error", err))
+		}
+	}()
 
 	serverErr := make(chan error, 1)
 	go func() {
@@ -93,6 +129,12 @@ func run(ctx context.Context, args []string, getenv func(string) string, stdout,
 	}
 	if err := <-serverErr; err != nil {
 		return fmt.Errorf("http server: %w", err)
+	}
+
+	select {
+	case <-schedulerDone:
+	case <-shutdownCtx.Done():
+		logger.WarnContext(shutdownCtx, "scheduler did not stop within the grace period")
 	}
 
 	logger.InfoContext(shutdownCtx, "stopped cleanly")

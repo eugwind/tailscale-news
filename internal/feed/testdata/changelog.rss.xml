@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Changelog on Example</title>
+    <link>https://example.test/changelog/</link>
+    <description>Anchor-based feed: every entry shares one path and differs only by fragment.</description>
+    <item>
+      <title>Operator v1.102.4</title>
+      <link>https://example.test/changelog/#2026-09-17-service</link>
+      <guid>changelog:2026-09-17-operator</guid>
+      <pubDate>Thu, 17 Sep 2026 00:00:00 GMT</pubDate>
+      <description>&lt;p&gt;A new release of the &lt;a href="/docs/operator"&gt;operator&lt;/a&gt; is available.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Client v1.102.3</title>
+      <link>https://example.test/changelog/#2026-09-15-client</link>
+      <guid>changelog:2026-09-15-client</guid>
+      <pubDate>Tue, 15 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Bug fixes for the desktop client.</description>
+    </item>
+    <item>
+      <title>Control plane update</title>
+      <link>https://example.test/changelog/#2026-09-10-control</link>
+      <guid>changelog:2026-09-10-control</guid>
+      <pubDate>Wed, 10 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Routine control plane maintenance.</description>
+    </item>
+  </channel>
+</rss>

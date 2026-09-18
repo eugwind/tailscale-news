@@ -20,6 +20,7 @@ const (
 	DefaultFetchTimeout    = 30 * time.Second
 	DefaultMaxConcurrency  = 4
 	DefaultShutdownTimeout = 15 * time.Second
+	DefaultMaxItems        = 5000
 )
 
 // Config holds every runtime setting for the service.
@@ -36,6 +37,8 @@ type Config struct {
 	MaxConcurrency int
 	// ShutdownTimeout bounds graceful shutdown before connections are forced closed.
 	ShutdownTimeout time.Duration
+	// MaxItems bounds how many stories the in-memory store retains.
+	MaxItems int
 }
 
 // Load reads the configuration from getenv, which is normally [os.Getenv].
@@ -49,6 +52,7 @@ func Load(getenv func(string) string) (Config, error) {
 		FetchTimeout:    DefaultFetchTimeout,
 		MaxConcurrency:  DefaultMaxConcurrency,
 		ShutdownTimeout: DefaultShutdownTimeout,
+		MaxItems:        DefaultMaxItems,
 	}
 
 	if v := getenv("TSNEWS_ADDR"); v != "" {
@@ -95,6 +99,17 @@ func Load(getenv func(string) string) (Config, error) {
 			return Config{}, fmt.Errorf("TSNEWS_MAX_CONCURRENCY %q: must be at least 1", v)
 		}
 		cfg.MaxConcurrency = parsed
+	}
+
+	if v := getenv("TSNEWS_MAX_ITEMS"); v != "" {
+		parsed, err := strconv.Atoi(v)
+		if err != nil {
+			return Config{}, fmt.Errorf("TSNEWS_MAX_ITEMS %q: %w", v, err)
+		}
+		if parsed < 1 {
+			return Config{}, fmt.Errorf("TSNEWS_MAX_ITEMS %q: must be at least 1", v)
+		}
+		cfg.MaxItems = parsed
 	}
 
 	return cfg, nil

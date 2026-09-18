@@ -25,6 +25,7 @@ func TestLoad_Defaults_AllFieldsPopulated(t *testing.T) {
 		FetchTimeout:    DefaultFetchTimeout,
 		MaxConcurrency:  DefaultMaxConcurrency,
 		ShutdownTimeout: DefaultShutdownTimeout,
+		MaxItems:        DefaultMaxItems,
 	}
 	if got != want {
 		t.Errorf("Load() = %+v, want %+v", got, want)
@@ -70,6 +71,11 @@ func TestLoad_ValidEnvironment_Overrides(t *testing.T) {
 			want: func(c Config) Config { c.MaxConcurrency = 16; return c },
 		},
 		{
+			name: "max items",
+			env:  map[string]string{"TSNEWS_MAX_ITEMS": "250"},
+			want: func(c Config) Config { c.MaxItems = 250; return c },
+		},
+		{
 			name: "empty values fall back to defaults",
 			env:  map[string]string{"TSNEWS_ADDR": "", "TSNEWS_POLL_INTERVAL": ""},
 			want: func(c Config) Config { return c },
@@ -110,6 +116,8 @@ func TestLoad_InvalidEnvironment_ReturnsError(t *testing.T) {
 		{"non-numeric concurrency", map[string]string{"TSNEWS_MAX_CONCURRENCY": "many"}},
 		{"zero concurrency", map[string]string{"TSNEWS_MAX_CONCURRENCY": "0"}},
 		{"negative concurrency", map[string]string{"TSNEWS_MAX_CONCURRENCY": "-2"}},
+		{"non-numeric max items", map[string]string{"TSNEWS_MAX_ITEMS": "lots"}},
+		{"zero max items", map[string]string{"TSNEWS_MAX_ITEMS": "0"}},
 	}
 
 	for _, tt := range tests {

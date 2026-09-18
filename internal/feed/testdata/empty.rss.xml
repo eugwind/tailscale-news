@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Example Blog</title>
+    <link>https://example.test/blog</link>
+    <description>A feed that is reachable and valid but currently has no entries.</description>
+  </channel>
+</rss>

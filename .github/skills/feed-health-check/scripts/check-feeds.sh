@@ -92,7 +92,9 @@ probe() {
 	printf '%-9s %s\n' "$verdict" "$url"
 	printf '\t\thttp=%s type=%s bytes=%s\n' "$code" "${ctype:-unknown}" "$size"
 	printf '\t\tetag=%s last-modified=%s\n' "${etag:-none}" "${lastmod:-none}"
-	[[ -n "$detail" ]] && printf '\t\tnote: %s\n' "$detail"
+	if [[ -n "$detail" ]]; then
+		printf '\t\tnote: %s\n' "$detail"
+	fi
 }
 
 exit_code=0
