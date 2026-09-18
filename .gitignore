@@ -1,0 +1,10 @@
+# Build output
+/dist/
+
+# Test and coverage artifacts
+*.out
+*.test
+
+# Local environment
+.env
+.env.local
