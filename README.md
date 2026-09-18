@@ -4,6 +4,8 @@ A small Go service that collects, de-duplicates, ranks, and serves
 Tailscale-related news from RSS/Atom feeds, blogs, release notes, and community
 sources. It runs as a single static binary with no runtime dependencies.
 
+By Eugene Selivanov · [MIT licensed](LICENSE) · not affiliated with Tailscale Inc.
+
 ## Status
 
 Early development. The parts that exist are tested and working; the rest is not
@@ -381,7 +383,14 @@ convention instead.
 3. Community sources (Reddit, Hacker News), which is where cross-source
    de-duplication starts to earn its keep
 
+## Author
+
+Eugene Selivanov
+
 ## License
 
-Not yet licensed. Add a `LICENSE` file before publishing or accepting
-contributions.
+[MIT](LICENSE) © 2026 Eugene Selivanov.
+
+The aggregator links to and quotes short summaries from third-party feeds. Those
+articles remain the property of their respective publishers; this licence covers
+only the code in this repository.
