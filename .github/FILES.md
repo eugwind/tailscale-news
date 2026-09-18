@@ -4,7 +4,7 @@
 >
 > When you open this repo in VS Code with GitHub Copilot enabled, these instruction and prompt files automatically apply to every chat request. They are not just examples — they are working artifacts.
 >
-> **Deep-dive explanation → [01-customization/README.md](../01-customization/README.md)**
+> **Patterns adapted from → [FY26 Advanced GitHub Copilot Workshop · 02-vscode-agents](https://github.com/haslam93/FY26---Advanced-GitHub-Copilot-Workshop/tree/main/02-vscode-agents)**
 
 ---
 
@@ -14,7 +14,6 @@
 |------|------|-------------|
 | [`copilot-instructions.md`](copilot-instructions.md) | Always-on instruction | Applied to every chat request in this workspace. Defines the Go 1.26 / linux-amd64 project conventions. |
 | [`instructions/go-standards.instructions.md`](instructions/go-standards.instructions.md) | Scoped instruction (`**/*.go`) | Go coding standards: naming, errors, context, concurrency, security, testing. |
-
 | [`AGENTS.md`](../AGENTS.md) | Always-on (multi-agent) | Same always-on scope, but recognized by Claude Code, Copilot and other agents. |
 | [`prompts/code-review.prompt.md`](prompts/code-review.prompt.md) | Prompt file | Structured review of selected Go code against the repo standards. |
 | [`prompts/generate-tests.prompt.md`](prompts/generate-tests.prompt.md) | Prompt file | Generates table-driven Go tests using the stdlib `testing` package. |
@@ -35,4 +34,4 @@ To use a prompt file: open Copilot Chat → click the **Attach** (paperclip) ico
 
 ---
 
-*Want to understand how these work? → [Module 01: Customization](../01-customization/README.md)*
+*Want to understand how these work? → [FY26 Advanced GitHub Copilot Workshop · 02-vscode-agents](https://github.com/haslam93/FY26---Advanced-GitHub-Copilot-Workshop/tree/main/02-vscode-agents)*

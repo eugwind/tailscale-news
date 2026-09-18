@@ -203,6 +203,79 @@ curl -s http://localhost:8080/sources
 
 ## How It Works
 
+```mermaid
+flowchart TD
+    subgraph REG["Source registry — internal/feed/sources.go"]
+        SRC["5 sources<br/>name · category · poll interval"]
+    end
+
+    subgraph SCHED["Scheduler — internal/aggregate"]
+        TICK["One goroutine per source<br/>own ticker, jittered first poll"]
+    end
+
+    subgraph FETCH["Fetcher — internal/feed/fetch.go"]
+        BACK{"Inside backoff<br/>window?"}
+        SKIP["Skipped<br/>no request made"]
+        REQ["GET with User-Agent, Accept<br/>ETag / If-Modified-Since"]
+        CODE{"HTTP status"}
+        FAIL["Record failure<br/>backoff 1m → 6h with jitter"]
+        READ["Read body<br/>io.LimitReader, 4 MB cap"]
+        HASH{"SHA-256 matches<br/>stored hash?"}
+        NOMOD["NotModified<br/>parsing skipped"]
+        PARSE["Parse RSS 2.0 or Atom<br/>encoding/xml"]
+        NORM["Normalise each entry<br/>canonical URL · plain text · UTC<br/>unlinkable entries skipped"]
+    end
+
+    subgraph STORE["Store — internal/store"]
+        KEY["DedupKey = SHA-256 of<br/>canonical URL + normalised title"]
+        SEEN{"Key already<br/>stored?"}
+        ADD["Add record<br/>FirstSeen = now"]
+        WINS{"Supersedes stored item?<br/>same source · category rank · has date"}
+        REPL["Replace item<br/>append source"]
+        DUP["Keep stored item<br/>append source"]
+        EVICT["Evict oldest<br/>over TSNEWS_MAX_ITEMS"]
+        DB[("In-memory records<br/>ordered newest first")]
+    end
+
+    subgraph HTTP["HTTP — internal/httpapi"]
+        HTML["GET /<br/>html/template, embedded CSS<br/>category chips · theme cookie"]
+        JSON["GET /api/items<br/>category · source · since · limit"]
+        HEALTH["GET /sources<br/>per-source polling health"]
+    end
+
+    SRC --> TICK
+    TICK --> BACK
+    BACK -->|yes| SKIP
+    BACK -->|no| REQ
+    REQ --> CODE
+    CODE -->|"304"| NOMOD
+    CODE -->|"4xx / 5xx / timeout"| FAIL
+    CODE -->|"2xx"| READ
+    READ --> HASH
+    HASH -->|yes| NOMOD
+    HASH -->|no| PARSE
+    PARSE --> NORM
+    NORM --> KEY
+    KEY --> SEEN
+    SEEN -->|no| ADD
+    SEEN -->|yes| WINS
+    WINS -->|yes| REPL
+    WINS -->|no| DUP
+    ADD --> EVICT
+    REPL --> EVICT
+    DUP --> EVICT
+    EVICT --> DB
+    DB --> HTML
+    DB --> JSON
+    FAIL -.->|"next tick"| BACK
+    SKIP -.->|"next tick"| BACK
+    NOMOD -.->|"next tick"| BACK
+    FETCH -.->|"health snapshot"| HEALTH
+```
+
+A failing source only affects its own branch: the scheduler keeps polling the
+others, and a success clears the backoff immediately.
+
 ### Normalisation
 
 Every entry from every source is reduced to a canonical `feed.Item`: absolute
@@ -365,6 +438,12 @@ destructive commands and run `gofmt`/`go vet` after every edit.
 
 [AGENTS.md](AGENTS.md) carries the same guidance for agents that read that
 convention instead.
+
+The structure of these customization files — instructions, prompts, agents,
+skills, and hooks — follows the patterns in
+[FY26 Advanced GitHub Copilot Workshop, module 02: VS Code agents](https://github.com/haslam93/FY26---Advanced-GitHub-Copilot-Workshop/tree/main/02-vscode-agents).
+The sample files from that workshop were the starting point; the content here has
+been rewritten for Go and for this project.
 
 ## Design Principles
 
