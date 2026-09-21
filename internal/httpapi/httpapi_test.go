@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -258,6 +259,16 @@ func TestItems_ParsesQueryParameters(t *testing.T) {
 			query: "?since=2026-09-12T00:00:00Z",
 			want:  store.Filter{Since: since, Limit: httpapi.DefaultItemLimit},
 		},
+		{
+			name:  "q",
+			query: "?q=funnel",
+			want:  store.Filter{Query: "funnel", Limit: httpapi.DefaultItemLimit},
+		},
+		{
+			name:  "q trims whitespace",
+			query: "?q=" + url.QueryEscape("  funnel  "),
+			want:  store.Filter{Query: "funnel", Limit: httpapi.DefaultItemLimit},
+		},
 	}
 
 	for _, tt := range tests {
@@ -276,7 +287,8 @@ func TestItems_ParsesQueryParameters(t *testing.T) {
 				t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
 			}
 			if lister.got.Category != tt.want.Category || lister.got.Source != tt.want.Source ||
-				lister.got.Limit != tt.want.Limit || !lister.got.Since.Equal(tt.want.Since) {
+				lister.got.Limit != tt.want.Limit || !lister.got.Since.Equal(tt.want.Since) ||
+				lister.got.Query != tt.want.Query {
 				t.Errorf("filter = %+v, want %+v", lister.got, tt.want)
 			}
 		})

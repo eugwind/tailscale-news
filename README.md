@@ -127,9 +127,10 @@ Unknown paths return `404`; a wrong method on a known path returns `405`.
 ### `GET /`
 
 A single server-rendered page listing the stored stories newest first, with
-category filter chips (`/?category=security`) and an Auto/Light/Dark theme
-selector (`/?theme=dark`). It accepts the same query parameters as `/api/items`
-and needs no JavaScript — the CSS and markup are embedded in the binary with
+category filter chips (`/?category=security`), a free-text search box
+(`/?q=funnel`), and an Auto/Light/Dark theme selector (`/?theme=dark`). It
+accepts the same query parameters as `/api/items`, and the search box preserves
+the active category and theme across a submission. It needs no JavaScript — the CSS and markup are embedded in the binary with
 `go:embed`, so there are no static asset routes and nothing to serve from disk.
 
 The theme is resolved server-side and remembered in a `tsnews_theme` cookie
@@ -149,6 +150,7 @@ link.
 | `category` | all | One of `security`, `release-notes`, `official`, `development`, `community`, `third-party` |
 | `source` | all | Match stories carried by a named source |
 | `since` | all | RFC3339 timestamp; returns stories newer than it |
+| `q` | all | Case-insensitive substring match against title or summary |
 | `limit` | `50` | Maximum stories returned, capped at `500` |
 
 An unknown category, a non-positive `limit`, or a malformed `since` returns `400`
@@ -458,9 +460,8 @@ been rewritten for Go and for this project.
 ## Roadmap
 
 1. Ranking, with security bulletins weighted above general news
-2. Simple search on the page and in the API — a `?q=` filter matching title and
-   summary, done server-side over the existing store; at a few hundred stories a
-   plain case-insensitive scan is enough, so no index is needed
+2. ~~Simple search on the page and in the API~~ — done: a `?q=` filter matches
+   title and summary case-insensitively, server-side over the existing store
 3. Persistence, if surviving a restart proves worth the dependency
 4. Community sources (Reddit, Hacker News), which is where cross-source
    de-duplication starts to earn its keep

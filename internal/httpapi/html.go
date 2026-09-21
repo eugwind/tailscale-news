@@ -146,15 +146,18 @@ func linkWith(r *http.Request, key, value string) string {
 }
 
 type indexPage struct {
-	Title       string
-	Version     string
-	Theme       string
-	Items       []store.Record
-	Count       int
-	Total       int
-	SourceCount int
-	Categories  []categoryLink
-	Themes      []categoryLink
+	Title           string
+	Version         string
+	Theme           string
+	Query           string
+	ClearSearchHref string
+	Category        feed.Category
+	Items           []store.Record
+	Count           int
+	Total           int
+	SourceCount     int
+	Categories      []categoryLink
+	Themes          []categoryLink
 }
 
 // navCategories are the filter chips, ordered by editorial weight. A chip is
@@ -181,12 +184,15 @@ func indexHandler(logger *slog.Logger, build BuildInfo, lister ItemLister, sourc
 		}
 
 		page := indexPage{
-			Title:       "Tailscale News",
-			Version:     build.Version,
-			Theme:       resolveTheme(w, r),
-			Items:       []store.Record{},
-			SourceCount: len(sources),
-			Categories:  buildCategoryLinks(r, filter.Category, sources),
+			Title:           "Tailscale News",
+			Version:         build.Version,
+			Theme:           resolveTheme(w, r),
+			Query:           filter.Query,
+			ClearSearchHref: linkWith(r, "q", ""),
+			Category:        filter.Category,
+			Items:           []store.Record{},
+			SourceCount:     len(sources),
+			Categories:      buildCategoryLinks(r, filter.Category, sources),
 		}
 		page.Themes = buildThemeLinks(r, page.Theme)
 		if lister != nil {

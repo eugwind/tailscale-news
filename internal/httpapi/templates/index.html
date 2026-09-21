@@ -63,6 +63,28 @@ nav a {
 nav a:hover { border-color: var(--accent); color: var(--accent); }
 nav a.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .bar { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; justify-content: space-between; }
+.search { display: flex; gap: .35rem; align-items: center; }
+.search input[type="search"] {
+  padding: .3rem .6rem;
+  border: 1px solid var(--line);
+  border-radius: .3rem;
+  background: var(--panel);
+  color: var(--text);
+  font-size: .8125rem;
+  min-width: 12rem;
+}
+.search button {
+  padding: .3rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: .3rem;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: .8125rem;
+  cursor: pointer;
+}
+.search button:hover { border-color: var(--accent); color: var(--accent); }
+.search a { color: var(--muted); font-size: .75rem; text-decoration: none; }
+.search a:hover { color: var(--accent); }
 .themes { display: flex; gap: .25rem; align-items: center; }
 .themes span { color: var(--muted); font-size: .75rem; margin-right: .2rem; }
 .themes a {
@@ -108,6 +130,13 @@ footer a { color: var(--accent); }
       <a href="{{.Href}}"{{if .Active}} class="active"{{end}}>{{.Label}}</a>
       {{end}}
     </nav>
+    <form class="search" action="/" method="get">
+      <input type="search" name="q" placeholder="Search stories" value="{{.Query}}" aria-label="Search stories">
+      {{if .Category}}<input type="hidden" name="category" value="{{.Category}}">{{end}}
+      {{if .Theme}}<input type="hidden" name="theme" value="{{.Theme}}">{{end}}
+      <button type="submit">Search</button>
+      {{if .Query}}<a href="{{.ClearSearchHref}}">Clear</a>{{end}}
+    </form>
     <div class="themes">
       <span>Theme</span>
       {{range .Themes}}
@@ -134,7 +163,7 @@ footer a { color: var(--accent); }
   </article>
   {{end}}
 {{else if .Total}}
-  <p class="empty">No stories match this filter. <a href="/">Show all {{.Total}}</a>.</p>
+  <p class="empty">{{if .Query}}No stories match &ldquo;{{.Query}}&rdquo;.{{else}}No stories match this filter.{{end}} <a href="/">Show all {{.Total}}</a>.</p>
 {{else}}
   <p class="empty">No stories yet. The scheduler polls on startup &mdash; refresh in a moment.</p>
 {{end}}

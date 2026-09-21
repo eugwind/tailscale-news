@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/eugwind/tailscale-news/internal/feed"
@@ -148,6 +149,8 @@ func parseItemFilter(r *http.Request) (store.Filter, error) {
 		}
 		filter.Since = since
 	}
+
+	filter.Query = strings.TrimSpace(query.Get("q"))
 
 	return filter, nil
 }

@@ -8,6 +8,7 @@ package store
 import (
 	"slices"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -53,7 +54,9 @@ type Filter struct {
 	Category feed.Category
 	Source   string
 	Since    time.Time
-	Limit    int
+	// Query matches case-insensitively against a story's title or summary.
+	Query string
+	Limit int
 }
 
 // Memory is a concurrency-safe in-memory store keyed by [feed.Item.DedupKey].
@@ -184,6 +187,8 @@ func (m *Memory) List(f Filter) []Record {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
+	query := strings.ToLower(strings.TrimSpace(f.Query))
+
 	out := make([]Record, 0, len(m.records))
 	for _, record := range m.records {
 		if f.Category != "" && record.Category != f.Category {
@@ -193,6 +198,10 @@ func (m *Memory) List(f Filter) []Record {
 			continue
 		}
 		if !f.Since.IsZero() && !record.Effective().After(f.Since) {
+			continue
+		}
+		if query != "" && !strings.Contains(strings.ToLower(record.Title), query) &&
+			!strings.Contains(strings.ToLower(record.Summary), query) {
 			continue
 		}
 

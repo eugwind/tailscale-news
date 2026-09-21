@@ -238,6 +238,9 @@ func TestList_Filters(t *testing.T) {
 		{"limit", store.Filter{Limit: 2}, []string{"Release", "Security"}},
 		{"limit larger than result", store.Filter{Limit: 99}, []string{"Release", "Security", "Official"}},
 		{"no match", store.Filter{Category: feed.CategoryThirdParty}, nil},
+		{"by query matches title case-insensitively", store.Filter{Query: "sECuriTY"}, []string{"Security"}},
+		{"by query trims surrounding whitespace", store.Filter{Query: "  release  "}, []string{"Release"}},
+		{"by query with no match", store.Filter{Query: "nonexistent"}, nil},
 	}
 
 	for _, tt := range tests {
@@ -254,6 +257,20 @@ func TestList_Filters(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestList_QueryMatchesSummary(t *testing.T) {
+	t.Parallel()
+
+	s := store.NewMemory(10)
+	withSummary := item("blog", feed.CategoryOfficial, "Story", "https://example.test/1", sept12)
+	withSummary.Summary = "A note about Funnel and Serve."
+	s.Put([]feed.Item{withSummary})
+
+	got := s.List(store.Filter{Query: "funnel"})
+	if len(got) != 1 {
+		t.Fatalf("List() returned %d records, want 1", len(got))
 	}
 }
 

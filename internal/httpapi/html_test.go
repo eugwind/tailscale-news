@@ -145,6 +145,42 @@ func TestIndex_CategoryNavigation(t *testing.T) {
 	}
 }
 
+func TestIndex_Search(t *testing.T) {
+	t.Parallel()
+
+	lister := &recordingLister{}
+	handler := htmlHandler(lister, liveSources)
+
+	rec := get(t, handler, "/?q=funnel&category=official&theme=dark")
+	body := rec.Body.String()
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
+	if lister.got.Query != "funnel" {
+		t.Errorf("filter query = %q, want %q", lister.got.Query, "funnel")
+	}
+	if !strings.Contains(body, `value="funnel"`) {
+		t.Error("the search box did not keep the submitted query")
+	}
+	if !strings.Contains(body, `name="category" value="official"`) {
+		t.Error("the search form dropped the active category filter")
+	}
+	if !strings.Contains(body, `name="theme" value="dark"`) {
+		t.Error("the search form dropped the active theme")
+	}
+}
+
+func TestIndex_Search_EmptyResultNamesTheQuery(t *testing.T) {
+	t.Parallel()
+
+	body := get(t, htmlHandler(&emptyFilterLister{total: 398}, liveSources), "/?q=nonexistent").Body.String()
+
+	if !strings.Contains(body, "No stories match &ldquo;nonexistent&rdquo;") {
+		t.Error("an empty search result should name the search term")
+	}
+}
+
 func TestIndex_OnlyOffersCategoriesThatHaveASource(t *testing.T) {
 	t.Parallel()
 
