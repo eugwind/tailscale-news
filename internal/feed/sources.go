@@ -34,12 +34,11 @@ var registeredSources = []Source{
 		URL:          "https://tailscale.com/learn/index.xml",
 		PollInterval: 6 * time.Hour,
 	},
-	{
-		Name:         "Tailscale dev blog",
-		Category:     CategoryDevelopment,
-		URL:          "https://tailscale.dev/feed.xml",
-		PollInterval: 6 * time.Hour,
-	},
+	// "Tailscale dev blog" (https://tailscale.dev/feed.xml) disabled 2026-09-21:
+	// the feed itself still returns 200 with well-formed items, but tailscale.dev
+	// now blanket-redirects every /blog/<slug> path to https://tailscale.com/blog/,
+	// so every item link resolves to the generic blog homepage instead of the
+	// story. Re-enable only if the dev blog content is republished at a live URL.
 }
 
 // Sources returns the registered sources. The result is a copy, so callers

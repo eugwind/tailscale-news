@@ -458,9 +458,46 @@ been rewritten for Go and for this project.
 ## Roadmap
 
 1. Ranking, with security bulletins weighted above general news
-2. Persistence, if surviving a restart proves worth the dependency
-3. Community sources (Reddit, Hacker News), which is where cross-source
+2. Simple search on the page and in the API — a `?q=` filter matching title and
+   summary, done server-side over the existing store; at a few hundred stories a
+   plain case-insensitive scan is enough, so no index is needed
+3. Persistence, if surviving a restart proves worth the dependency
+4. Community sources (Reddit, Hacker News), which is where cross-source
    de-duplication starts to earn its keep
+5. Explore an Android app reading the existing `/api/items` endpoint — the JSON
+   API is already the natural backend, so this is a client question, not a
+   service one
+
+### Design note: running the whole service on Android
+
+Rather than an app talking to a hosted instance, the aggregator could run
+entirely on the device, with the UI reading from it locally. `internal/feed` and
+`internal/store` are pure Go with no OS coupling, so they would port unchanged.
+Three constraints decide the shape:
+
+- **Packaging.** Android 10+ refuses to execute a binary from app-writable
+  storage, so the standalone binary is not an option. The supported route is
+  `gomobile bind`, which compiles the Go packages into a `.so` inside an AAR and
+  calls them over JNI.
+- **Scheduling.** The per-source `time.Ticker` goroutines will not survive Doze.
+  Android's `WorkManager` would have to own the schedule and call a `PollOnce()`
+  entry point on each wakeup — an inversion of `internal/aggregate`, though a
+  small one, since `Fetch` is already a standalone operation.
+- **Storage.** The process is killed routinely, so an in-memory store would
+  re-download every feed on each cold start. Persistence stops being optional,
+  and the content-hash change detection matters far more on metered data.
+
+Prefer **direct binding over a local HTTP server**: a port on `127.0.0.1` is
+reachable by every other app on the device with no origin isolation and no
+authentication, and it spends battery serving HTTP to itself. A thin binding
+package — `PollOnce() error`, `ListJSON(category string, limit int) string`, the
+simple types `gomobile` can marshal — avoids the listening socket entirely. That
+is the one legitimate use for `pkg/`, which is reserved for exactly this kind of
+external reuse.
+
+Prerequisites, in order: content-hash fix, persistence, binding package, client.
+The first two improve the server build as well, so nothing is wasted if this
+direction is not pursued.
 
 ## Author
 
