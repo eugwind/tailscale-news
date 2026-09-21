@@ -6,6 +6,8 @@ sources. It runs as a single static binary with no runtime dependencies.
 
 By Eugene Selivanov · [MIT licensed](LICENSE) · not affiliated with Tailscale Inc.
 
+![Tailscale News, filtered to the Community category, with the search box and category chips visible](docs/screenshot.png)
+
 ## Status
 
 Early development. The parts that exist are tested and working; the rest is not
