@@ -190,6 +190,45 @@ func TestParse_AnchorBasedFeed_KeepsEntriesDistinct(t *testing.T) {
 	}
 }
 
+func TestParse_Reddit_UnadornedLinkAndHTMLContent(t *testing.T) {
+	t.Parallel()
+
+	src := feed.Source{
+		Name:     "r/Tailscale",
+		Category: feed.CategoryCommunity,
+		URL:      "https://example.test/r/Tailscale/new.rss",
+	}
+
+	items, err := feed.Parse(fixture(t, "reddit.atom.xml"), src)
+	if err != nil {
+		t.Fatalf("Parse() error = %v, want nil", err)
+	}
+	if len(items) != 3 {
+		t.Fatalf("Parse() returned %d items, want 3", len(items))
+	}
+
+	// Reddit's <link href="..."/> carries no rel attribute at all, the case
+	// atomLink must still treat as the alternate link rather than skipping it.
+	first := items[0]
+	if want := "https://example.test/r/Tailscale/comments/1wmc2fw/exit_node"; first.URL != want {
+		t.Errorf("URL = %q, want %q", first.URL, want)
+	}
+	if want := "Exit node"; first.Title != want {
+		t.Errorf("Title = %q, want %q", first.Title, want)
+	}
+	if want := "t3_1wmc2fw"; first.GUID != want {
+		t.Errorf("GUID = %q, want %q", first.GUID, want)
+	}
+	if first.Category != feed.CategoryCommunity {
+		t.Errorf("Category = %q, want %q", first.Category, feed.CategoryCommunity)
+	}
+
+	second := items[1]
+	if want := "Curious if anyone has tried a paid DERP relay service and whether it is worth it."; second.Summary != want {
+		t.Errorf("Summary = %q, want %q (HTML markup and SC_OFF/SC_ON comments stripped)", second.Summary, want)
+	}
+}
+
 func TestParse_EdgeCases(t *testing.T) {
 	t.Parallel()
 

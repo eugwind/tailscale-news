@@ -39,6 +39,14 @@ var registeredSources = []Source{
 	// now blanket-redirects every /blog/<slug> path to https://tailscale.com/blog/,
 	// so every item link resolves to the generic blog homepage instead of the
 	// story. Re-enable only if the dev blog content is republished at a live URL.
+	{
+		// Reddit's subreddit feed is Atom, so no new parser is needed. "new"
+		// (not the default hot sort) is used so nothing is missed between polls.
+		Name:         "r/Tailscale",
+		Category:     CategoryCommunity,
+		URL:          "https://www.reddit.com/r/Tailscale/new.rss",
+		PollInterval: 30 * time.Minute,
+	},
 }
 
 // Sources returns the registered sources. The result is a copy, so callers

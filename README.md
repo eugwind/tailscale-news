@@ -335,8 +335,8 @@ source never affects the others, and a success clears the backoff immediately.
 
 ## Sources
 
-Registered in [internal/feed/sources.go](internal/feed/sources.go); all five were
-probed on 2026-09-18.
+Registered in [internal/feed/sources.go](internal/feed/sources.go); the four
+`tailscale.com` feeds were probed on 2026-09-18 and `r/Tailscale` on 2026-09-21.
 
 | Source | Category | Poll | Feed |
 |---|---|---|---|
@@ -344,15 +344,19 @@ probed on 2026-09-18.
 | Tailscale changelog | `release-notes` | 30m | `tailscale.com/changelog/index.xml` |
 | Tailscale security bulletins | `security` | 10m | `tailscale.com/security-bulletins/index.xml` |
 | Tailscale Learn | `official` | 6h | `tailscale.com/learn/index.xml` |
-| Tailscale dev blog | `development` | 6h | `tailscale.dev/feed.xml` |
+| r/Tailscale | `community` | 30m | `reddit.com/r/Tailscale/new.rss` |
+
+The Tailscale dev blog (`tailscale.dev/feed.xml`) is disabled: the site now
+blanket-redirects every article path to the generic blog homepage, so its item
+links no longer resolve to a specific story.
 
 Sources live in code rather than a config file, so a typo fails the build instead
 of a poll. `PollInterval` overrides the global `TSNEWS_POLL_INTERVAL`; zero means
 the global value applies.
 
-Two things the survey turned up that shape the fetcher: no `tailscale.com` feed
-sends `ETag` or `Last-Modified`, so conditional polling is unavailable for four
-of the five sources and a stored content hash is needed instead; and the
+Two things the survey turned up that shape the fetcher: no source sends `ETag`
+or `Last-Modified` (Reddit's Atom feed is no exception), so conditional polling
+is unavailable everywhere and a stored content hash is needed instead; and the
 changelog feed is ~375 KB with 302 entries, so response limits must accommodate it.
 
 ## Project Layout
@@ -463,8 +467,10 @@ been rewritten for Go and for this project.
 2. ~~Simple search on the page and in the API~~ — done: a `?q=` filter matches
    title and summary case-insensitively, server-side over the existing store
 3. Persistence, if surviving a restart proves worth the dependency
-4. Community sources (Reddit, Hacker News), which is where cross-source
-   de-duplication starts to earn its keep
+4. ~~Community sources (Reddit, Hacker News)~~ — partly done: `r/Tailscale`
+   is registered via its Atom feed, which the existing parser handles as-is.
+   Hacker News has no native feed; adding it needs a JSON parser branch for
+   the Algolia search API and is deferred
 5. Explore an Android app reading the existing `/api/items` endpoint — the JSON
    API is already the natural backend, so this is a client question, not a
    service one
